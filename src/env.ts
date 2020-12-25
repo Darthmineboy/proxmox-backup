@@ -1,3 +1,4 @@
+export const ENV_CRON = process.env.CRON ?? '0 0 * * *';
 export const ENV_HOST = process.env.HOST;
 export const ENV_PORT: number = +process.env.PORT ?? 22;
 export const ENV_USER = process.env.USER ?? 'root';

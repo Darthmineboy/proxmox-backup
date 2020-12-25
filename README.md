@@ -10,3 +10,24 @@ I use this app to download my Proxmox backups nightly to a NAS with Docker suppo
     all backups from the Proxmox host, instead this app has it's own backup retention.
     The idea behind this is that if your Proxmox host is compromised, 
     and all backups are deleted, then the backups are still retained by this app.
+    
+# Docker compose
+```yaml
+version: '3.4'
+services:
+  backup:
+    build: .
+    environment:
+      - CRON=0 0 * * *
+      - HOST=123.123.123.123
+      - PORT=22
+      - USER=root
+      - PASSWORD=password
+      - DIRECTORY=/var/lib/vz/dump
+      - FILE_NAME=vzdump-qemu-(?<vm>\d+)-(?<year>\d+)_(?<month>\d+)_(?<day>\d+)-(?<hour>\d+)_(?<minute>\d+)_(?<second>\d+).vma.+
+      - KEEP_DAILY=7
+      - KEEP_WEEKLY=4
+      - KEEP_MONTHLY=6
+      - KEEP_YEARLY=3
+```
+

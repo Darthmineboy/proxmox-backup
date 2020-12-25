@@ -1,8 +1,10 @@
-import { mkdirSync, promises } from 'fs';
+import { existsSync, mkdirSync, promises } from 'fs';
 
 export const DATA_DIR = 'data';
 
-mkdirSync(DATA_DIR)
+if (!existsSync(DATA_DIR)) {
+  mkdirSync(DATA_DIR);
+}
 
 export class FileStore implements BackupStore {
 

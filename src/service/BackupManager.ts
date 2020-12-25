@@ -11,6 +11,11 @@ export class BackupManager {
   sftp = new SftpService();
   local = new FileStore();
 
+  async hasLocalBackups(): Promise<boolean> {
+    const list = await this.local.list();
+    return list.length > 0;
+  }
+
   async perform() {
     const localFiles = await this.local.list();
     const remoteFiles = await this.sftp.list();
@@ -18,10 +23,10 @@ export class BackupManager {
     const backups = this.mergeList(localFiles, remoteFiles);
     const vms = this.getVMs(backups);
 
-    logger.info('Managing backups for %s VMs (%s local files, %s remote files)', vms.length, localFiles.length, remoteFiles.length);
+    logger.info('Managing backups for %s VMs', vms.length);
 
     for (const vm of vms) {
-      logger.info('Checking backups for VM %s...', vm);
+      logger.info('Checking backups for VM %s', vm);
 
       const vmBackups = this.getBackupsForVM(vm, backups);
       this.sortBackupsDescending(vmBackups);
@@ -56,7 +61,7 @@ export class BackupManager {
     for (const backup of ordered) {
       const time = this.endOf(backup, unit).unix();
       if (!handled.has(time)) {
-        logger.info('Adding %s with time %s %s', backup.name, time, backup.date);
+        logger.debug('Adding %s with time %s %s', backup.name, time, backup.date);
         handled.add(time);
         latestBackupInPeriod.push(backup);
       }
@@ -67,18 +72,18 @@ export class BackupManager {
     for (let i = 0; i < keep; i++) {
       const backup = latestBackupInPeriod[i];
       if (!backup) {
-        logger.info('Not enough backups to satisfy full retention period for (period = %s, number = %s)', unit, i + 1);
+        logger.debug('Not enough backups to satisfy full retention period for (period = %s, number = %s)', unit, i + 1);
         break;
       }
 
       if (backup.keep) {
-        logger.info('Backup %s will be kept locally (period = %s, number = %s)', backup.name, unit, i + 1);
+        logger.debug('Backup %s will be kept locally (period = %s, number = %s)', backup.name, unit, i + 1);
       } else {
         backup.keep = true;
         if (backup.remote) {
-          logger.info('Backup %s will be downloaded (period = %s, number = %s)', backup.name, unit, i + 1);
+          logger.debug('Backup %s will be downloaded (period = %s, number = %s)', backup.name, unit, i + 1);
         } else {
-          logger.info('Backup %s will be kept locally (period = %s, number = %s)', backup.name, unit, i + 1);
+          logger.debug('Backup %s will be kept locally (period = %s, number = %s)', backup.name, unit, i + 1);
         }
       }
     }

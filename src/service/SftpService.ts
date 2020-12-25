@@ -37,7 +37,7 @@ export class SftpService implements BackupStore {
         step: (totalTransferred, _, total) => {
           const progress = Math.round(totalTransferred / total * 100);
           if (previousProgress != progress) {
-            logger.info('Downloading backup - %s %s / %s (%s%%)', file, prettyBytes(totalTransferred), prettyBytes(total), progress);
+            logger.info('Downloading backup %s - %s / %s (%s%%)', file, prettyBytes(totalTransferred), prettyBytes(total), progress);
             previousProgress = progress;
           }
         },
