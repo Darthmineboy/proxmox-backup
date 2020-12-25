@@ -6,6 +6,13 @@ import { logger } from '../logger';
 import { Moment, unitOfTime } from 'moment';
 import { ENV_KEEP_DAILY, ENV_KEEP_MONTHLY, ENV_KEEP_WEEKLY, ENV_KEEP_YEARLY } from '../env';
 import path from 'path';
+import { existsSync, mkdirSync, promises } from 'fs';
+
+const TEMP_DIR = 'data/temp';
+
+if (!existsSync(TEMP_DIR)) {
+  mkdirSync(TEMP_DIR, { recursive: true });
+}
 
 export class BackupManager {
   sftp = new SftpService();
@@ -37,13 +44,37 @@ export class BackupManager {
       this.keep(vmBackups, ENV_KEEP_MONTHLY, 'month');
       this.keep(vmBackups, ENV_KEEP_YEARLY, 'year');
 
+      let downloaded = 0;
+      let deleted = 0;
+
       for (const backup of vmBackups) {
         if (!backup.remote || !backup.keep) {
           continue;
         }
         logger.info('Downloading backup %s', backup.name);
-        await this.sftp.download(backup.name, path.join(DATA_DIR, backup.name));
+        const tempFile = path.join(TEMP_DIR, backup.name);
+        await this.sftp.download(backup.name, tempFile);
+
+        const stat = await promises.stat(backup.name);
+        const sftpInfo = await this.sftp.info(backup.name);
+        if (stat.size === sftpInfo.size) {
+          downloaded++;
+          await promises.rename(tempFile, path.join(DATA_DIR, backup.name));
+        } else {
+          logger.warn('Backup size is different, removing backup %s...', backup.name);
+          await promises.rm(tempFile);
+        }
       }
+
+      for (const backup of vmBackups) {
+        if (!backup.remote && !backup.keep) {
+          deleted++;
+          logger.info('Removing backup %s (not protected by retention)', backup.name);
+          await promises.rm(path.join(DATA_DIR, backup.name));
+        }
+      }
+
+      logger.info('Completed backups. Downloaded %s backups, deleted %s backups', downloaded, deleted);
     }
 
   }

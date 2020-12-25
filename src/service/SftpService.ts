@@ -1,4 +1,4 @@
-import Client from 'ssh2-sftp-client';
+import Client, { FileInfo } from 'ssh2-sftp-client';
 import { ENV_DIRECTORY, ENV_HOST, ENV_PASSWORD, ENV_PORT, ENV_USER } from '../env';
 import path from 'path';
 import { logger } from '../logger';
@@ -42,6 +42,16 @@ export class SftpService implements BackupStore {
           }
         },
       });
+    } finally {
+      await client.end();
+    }
+  }
+
+  async info(file: string): Promise<FileInfo> {
+    const client = await this.connect();
+    try {
+      const list = await client.list(ENV_DIRECTORY);
+      return list.find(e => e.name === file);
     } finally {
       await client.end();
     }
