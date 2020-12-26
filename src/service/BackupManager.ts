@@ -4,14 +4,17 @@ import { Backup } from '../domain/Backup';
 import { parseBackupName } from '../util';
 import { logger } from '../logger';
 import { unitOfTime } from 'moment';
-import { ENV_KEEP_DAILY, ENV_KEEP_MONTHLY, ENV_KEEP_WEEKLY, ENV_KEEP_YEARLY } from '../env';
+import { ENV_KEEP_DAILY, ENV_KEEP_MONTHLY, ENV_KEEP_WEEKLY, ENV_KEEP_YEARLY, ENV_MAX_DOWNLOADS_EACH_RUN } from '../env';
 import path from 'path';
 import { existsSync, mkdirSync, promises } from 'fs';
+import { emptyDir } from 'fs-extra';
 
 const TEMP_DIR = 'data/temp';
 
 if (!existsSync(TEMP_DIR)) {
   mkdirSync(TEMP_DIR, { recursive: true });
+} else {
+  emptyDir(TEMP_DIR).catch(err => logger.error('Error while emptying temp directory', err));
 }
 
 export class BackupManager {
@@ -51,6 +54,11 @@ export class BackupManager {
         if (!backup.remote || !backup.keep) {
           continue;
         }
+        if (ENV_MAX_DOWNLOADS_EACH_RUN > 0 && downloaded === ENV_MAX_DOWNLOADS_EACH_RUN) {
+          logger.info('Reached the download limit of %s backups per run limit for VM %s', ENV_MAX_DOWNLOADS_EACH_RUN,vm)
+          break;
+        }
+
         logger.info('Downloading backup %s', backup.name);
         const tempFile = path.join(TEMP_DIR, backup.name);
         await this.sftp.download(backup.name, tempFile);
