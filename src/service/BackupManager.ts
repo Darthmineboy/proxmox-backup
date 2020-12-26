@@ -55,7 +55,7 @@ export class BackupManager {
         const tempFile = path.join(TEMP_DIR, backup.name);
         await this.sftp.download(backup.name, tempFile);
 
-        const stat = await promises.stat(backup.name);
+        const stat = await promises.stat(tempFile);
         const sftpInfo = await this.sftp.info(backup.name);
         if (stat.size === sftpInfo.size) {
           downloaded++;

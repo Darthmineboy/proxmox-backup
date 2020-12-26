@@ -3,6 +3,7 @@ export const ENV_HOST = process.env.HOST;
 export const ENV_PORT: number = +process.env.PORT ?? 22;
 export const ENV_USER = process.env.USER ?? 'root';
 export const ENV_PASSWORD = process.env.PASSWORD;
+export const ENV_RUN_AFTER_START = process.env.RUN_AFTER_START !== 'false';
 export const ENV_DIRECTORY = process.env.DIRECTORY ?? '/var/lib/vz/dump';
 export const ENV_FILE_NAME = process.env.FILE_NAME ?? 'vzdump-qemu-(?<vm>\\d+)-(?<year>\\d+)_(?<month>\\d+)_(?<day>\\d+)-(?<hour>\\d+)_(?<minute>\\d+)_(?<second>\\d+).vma.+';
 export const ENV_KEEP_DAILY: number = +process.env.KEEP_DAILY ?? 0;
