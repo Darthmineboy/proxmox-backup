@@ -3,7 +3,7 @@ import { DATA_DIR, FileStore } from './FileStore';
 import { Backup } from '../domain/Backup';
 import { parseBackupName } from '../util';
 import { logger } from '../logger';
-import { Moment, unitOfTime } from 'moment';
+import { unitOfTime } from 'moment';
 import { ENV_KEEP_DAILY, ENV_KEEP_MONTHLY, ENV_KEEP_WEEKLY, ENV_KEEP_YEARLY } from '../env';
 import path from 'path';
 import { existsSync, mkdirSync, promises } from 'fs';
@@ -90,7 +90,7 @@ export class BackupManager {
 
     const ordered = [...backups.filter(b => !b.remote), ...backups.filter(b => b.remote)];
     for (const backup of ordered) {
-      const time = this.endOf(backup, unit).unix();
+      const time = backup.endOfPeriod(unit).unix();
       if (!handled.has(time)) {
         logger.debug('Adding %s with time %s %s', backup.name, time, backup.date);
         handled.add(time);
@@ -167,10 +167,6 @@ export class BackupManager {
     backups.sort((a, b) => {
       return b.date.unix() - a.date.unix();
     });
-  }
-
-  endOf(backup: Backup, unit: unitOfTime.StartOf): Moment {
-    return backup.date.clone().endOf(unit);
   }
 
 }
