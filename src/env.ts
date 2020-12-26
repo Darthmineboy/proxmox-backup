@@ -1,11 +1,15 @@
 export const ENV_CRON = process.env.CRON ?? '0 0 * * *';
-export const ENV_HOST = process.env.HOST;
-export const ENV_PORT: number = +process.env.PORT ?? 22;
-export const ENV_USER = process.env.USER ?? 'root';
-export const ENV_PASSWORD = process.env.PASSWORD;
+
+export const ENV_SFTP_HOST = process.env.SFTP_HOST;
+export const ENV_SFTP_PORT: number = +process.env.SFTP_PORT ?? 22;
+export const ENV_SFTP_USER = process.env.SFTP_USER ?? 'root';
+export const ENV_SFTP_PASSWORD = process.env.SFTP_PASSWORD;
+export const ENV_SFTP_CONCURRENCY: number = +process.env.SFTP_CONCURRENCY ?? 1;
+
 export const ENV_RUN_AFTER_START = process.env.RUN_AFTER_START !== 'false';
 export const ENV_DIRECTORY = process.env.DIRECTORY ?? '/var/lib/vz/dump';
 export const ENV_FILE_NAME = process.env.FILE_NAME ?? 'vzdump-qemu-(?<vm>\\d+)-(?<year>\\d+)_(?<month>\\d+)_(?<day>\\d+)-(?<hour>\\d+)_(?<minute>\\d+)_(?<second>\\d+).vma.+';
+
 export const ENV_KEEP_DAILY: number = +process.env.KEEP_DAILY ?? 0;
 export const ENV_KEEP_WEEKLY: number = +process.env.KEEP_WEEKLY ?? 0;
 export const ENV_KEEP_MONTHLY: number = +process.env.KEEP_MONTHLY ?? 0;

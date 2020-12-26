@@ -19,10 +19,12 @@ services:
     build: .
     environment:
       - CRON=0 0 * * *
-      - HOST=123.123.123.123
-      - PORT=22
-      - USER=root
-      - PASSWORD=password
+      - SFTP_HOST=123.123.123.123
+      - SFTP_PORT=22
+      - SFTP_USER=root
+      - SFTP_PASSWORD=password
+      - SFTP_CONCURRENCY=1
+      - RUN_AFTER_START=true
       - DIRECTORY=/var/lib/vz/dump
       - FILE_NAME=vzdump-qemu-(?<vm>\d+)-(?<year>\d+)_(?<month>\d+)_(?<day>\d+)-(?<hour>\d+)_(?<minute>\d+)_(?<second>\d+).vma.+
       - KEEP_DAILY=7

@@ -10,8 +10,11 @@ const lock = new AsyncLock({ timeout: 5000 });
 const backupManager = new BackupManager();
 
 lock.acquire(LOCK_KEY, async () => {
-  if (ENV_RUN_AFTER_START || !await backupManager.hasLocalBackups()) {
-    logger.info('Detected no local backups, performing initial backup');
+  const noBackups = !await backupManager.hasLocalBackups();
+  if (ENV_RUN_AFTER_START || noBackups) {
+    if(noBackups) {
+      logger.info('Detected no local backups, performing initial backup');
+    }
     return backupManager.perform();
   }
 });
