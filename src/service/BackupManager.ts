@@ -26,7 +26,7 @@ export class BackupManager {
     return list.length > 0;
   }
 
-  async perform() {
+  async perform(): Promise<void> {
     const localFiles = await this.local.list();
     const remoteFiles = await this.sftp.list();
 
@@ -34,6 +34,9 @@ export class BackupManager {
     const vms = this.getVMs(backups);
 
     logger.info('Managing backups for %s VMs', vms.length);
+
+    let downloaded = 0;
+    let deleted = 0;
 
     for (const vm of vms) {
       logger.info('Checking backups for VM %s', vm);
@@ -46,9 +49,6 @@ export class BackupManager {
       this.keep(vmBackups, ENV_KEEP_WEEKLY, 'week');
       this.keep(vmBackups, ENV_KEEP_MONTHLY, 'month');
       this.keep(vmBackups, ENV_KEEP_YEARLY, 'year');
-
-      let downloaded = 0;
-      let deleted = 0;
 
       for (const backup of vmBackups) {
         if (!backup.remote || !backup.keep) {
@@ -81,10 +81,9 @@ export class BackupManager {
           await promises.rm(path.join(DATA_DIR, backup.name));
         }
       }
-
-      logger.info('Completed backups. Downloaded %s backups, deleted %s backups', downloaded, deleted);
     }
 
+    logger.info('Completed backups. Downloaded %s backups, deleted %s backups', downloaded, deleted);
   }
 
   keep(backups: Backup[], keep: number, unit: unitOfTime.StartOf): void {

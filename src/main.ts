@@ -12,19 +12,25 @@ const backupManager = new BackupManager();
 lock.acquire(LOCK_KEY, async () => {
   const noBackups = !await backupManager.hasLocalBackups();
   if (ENV_RUN_AFTER_START || noBackups) {
-    if(noBackups) {
+    if (noBackups) {
       logger.info('Detected no local backups, performing initial backup');
     }
     return backupManager.perform();
   }
-});
+}).then(postReleaseLock).catch(handleLockError);
 
 logger.info('Backups will be run using cron schedule %s', ENV_CRON);
 
 cron.schedule(ENV_CRON, () => {
   logger.info('Running scheduled backup...');
 
-  lock.acquire(LOCK_KEY, backupManager.perform, () => {
-    logger.warn('Failed to acquire lock, is another backup running?');
-  });
+  lock.acquire(LOCK_KEY, backupManager.perform).then(postReleaseLock).catch(handleLockError);
 });
+
+function postReleaseLock() {
+  logger.info('Released backup lock');
+}
+
+function handleLockError(err) {
+  logger.warn('Failed to acquire lock, is another backup running?', err);
+}

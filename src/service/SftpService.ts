@@ -13,6 +13,8 @@ export class SftpService implements BackupStore {
       port: ENV_SFTP_PORT,
       username: ENV_SFTP_USER,
       password: ENV_SFTP_PASSWORD,
+      keepaliveInterval: 30000,
+      keepaliveCountMax: 5
     });
     return client;
   }
