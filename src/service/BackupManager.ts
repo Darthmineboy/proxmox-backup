@@ -35,11 +35,14 @@ export class BackupManager {
 
     logger.info('Managing backups for %s VMs', vms.length);
 
-    let downloaded = 0;
-    let deleted = 0;
+    let downloadedTotal = 0;
+    let deletedTotal = 0;
 
     for (const vm of vms) {
       logger.info('Checking backups for VM %s', vm);
+
+      let downloaded = 0;
+      let deleted = 0;
 
       const vmBackups = this.getBackupsForVM(vm, backups);
       this.sortBackupsDescending(vmBackups);
@@ -55,7 +58,7 @@ export class BackupManager {
           continue;
         }
         if (ENV_MAX_DOWNLOADS_EACH_RUN > 0 && downloaded === ENV_MAX_DOWNLOADS_EACH_RUN) {
-          logger.info('Reached the download limit of %s backups per run limit for VM %s', ENV_MAX_DOWNLOADS_EACH_RUN,vm)
+          logger.info('Reached the download limit of %s backups per run limit for VM %s', ENV_MAX_DOWNLOADS_EACH_RUN, vm);
           break;
         }
 
@@ -81,9 +84,13 @@ export class BackupManager {
           await promises.rm(path.join(DATA_DIR, backup.name));
         }
       }
+
+      logger.info('Completed backups for VM %s. Downloaded %s backups, deleted %s backups', vm, downloaded, deleted);
+      downloadedTotal += downloaded;
+      deletedTotal += deleted;
     }
 
-    logger.info('Completed backups. Downloaded %s backups, deleted %s backups', downloaded, deleted);
+    logger.info('Completed all backups. Downloaded %s backups, deleted %s backups', downloadedTotal, deletedTotal);
   }
 
   keep(backups: Backup[], keep: number, unit: unitOfTime.StartOf): void {
