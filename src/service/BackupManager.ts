@@ -26,7 +26,7 @@ export class BackupManager {
     return list.length > 0;
   }
 
-  async perform(): Promise<void> {
+  perform = async (): Promise<void> => {
     const localFiles = await this.local.list();
     const remoteFiles = await this.sftp.list();
 
@@ -91,7 +91,7 @@ export class BackupManager {
     }
 
     logger.info('Completed all backups. Downloaded %s backups, deleted %s backups', downloadedTotal, deletedTotal);
-  }
+  };
 
   keep(backups: Backup[], keep: number, unit: unitOfTime.StartOf): void {
     if (keep <= 0) {
