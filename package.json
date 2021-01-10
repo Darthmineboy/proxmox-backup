@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "description": "Backup proxmox backups",
   "engines": {
-    "node": ">= 14.15 <15"
+    "node": ">= 15 <16"
   },
   "devDependencies": {
     "@types/jest": "~26.0.15",
