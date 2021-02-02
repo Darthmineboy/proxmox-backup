@@ -14,7 +14,8 @@ export class SftpService implements BackupStore {
       username: ENV_SFTP_USER,
       password: ENV_SFTP_PASSWORD,
       keepaliveInterval: 30000,
-      keepaliveCountMax: 5
+      keepaliveCountMax: 5,
+      debug: information => logger.debug(information)
     });
     return client;
   }
