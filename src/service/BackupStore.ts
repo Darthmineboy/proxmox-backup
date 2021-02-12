@@ -1,5 +1,3 @@
 interface BackupStore {
-
-  list(): Promise<string[]>
-
+    list(): Promise<string[]>;
 }

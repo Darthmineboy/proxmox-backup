@@ -10,27 +10,39 @@ const lock = new AsyncLock({ timeout: 5000 });
 const backupManager = new BackupManager();
 
 lock.acquire(LOCK_KEY, async () => {
-  const noBackups = !await backupManager.hasLocalBackups();
-  if (ENV_RUN_AFTER_START || noBackups) {
-    if (noBackups) {
-      logger.info('Detected no local backups, performing initial backup');
+    const noBackups = !(await backupManager.hasLocalBackups());
+    if (ENV_RUN_AFTER_START || noBackups) {
+        if (noBackups) {
+            logger.info('Detected no local backups, performing initial backup');
+        }
+        return backupManager.perform();
     }
-    return backupManager.perform();
-  }
-}).then(postReleaseLock).catch(handleLockError);
+})
+    .then(postReleaseLock)
+    .catch(handleLockError);
 
 logger.info('Backups will be run using cron schedule %s', ENV_CRON);
 
 cron.schedule(ENV_CRON, () => {
-  logger.info('Running scheduled backup...');
+    logger.info('Running scheduled backup...');
 
-  lock.acquire(LOCK_KEY, backupManager.perform).then(postReleaseLock).catch(handleLockError);
+    lock.acquire(LOCK_KEY, backupManager.perform)
+        .then(postReleaseLock)
+        .catch(handleLockError);
 });
 
 function postReleaseLock() {
-  logger.info('Released backup lock');
+    logger.info('Released backup lock');
 }
 
 function handleLockError(err) {
-  logger.warn('Failed to acquire lock, is another backup running?', err);
+    logger.warn('Failed to acquire lock, is another backup running?', err);
+    setTimeout(() => {
+        if (lock.isBusy()) {
+            logger.warn(
+                'Lock is still busy 6 hours after failing to acquire lock, exiting...',
+            );
+            process.exit(1);
+        }
+    }, 3600_000 * 6);
 }
