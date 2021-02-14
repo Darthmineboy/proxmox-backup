@@ -1,15 +1,12 @@
 import Client, { FileInfo } from 'ssh2-sftp-client';
 import {
     ENV_DIRECTORY,
-    ENV_SFTP_CONCURRENCY,
     ENV_SFTP_HOST,
     ENV_SFTP_PASSWORD,
     ENV_SFTP_PORT,
     ENV_SFTP_USER,
 } from '../env';
 import path from 'path';
-import { logger } from '../logger';
-import prettyBytes from 'pretty-bytes';
 
 export class SftpService implements BackupStore {
     async connect(): Promise<Client> {
@@ -38,7 +35,8 @@ export class SftpService implements BackupStore {
     async download(file: string, destination: string): Promise<void> {
         const client = await this.connect();
         try {
-            let previousProgress = 0;
+            await client.get(path.join(ENV_DIRECTORY, file), destination);
+            /* let previousProgress = 0;
             await client.fastGet(path.join(ENV_DIRECTORY, file), destination, {
                 //chunkSize: 32768,
                 concurrency: ENV_SFTP_CONCURRENCY,
@@ -57,7 +55,7 @@ export class SftpService implements BackupStore {
                         previousProgress = progress;
                     }
                 },
-            });
+            });*/
         } finally {
             await client.end();
         }
